@@ -1,0 +1,167 @@
+#!/usr/bin/env/python3
+# -*- coding: utf-8 -*-
+from collections import defaultdict
+import sys, argparse
+
+parser = argparse.ArgumentParser(description='Simulação de MPSoc')
+
+parser.add_argument('entrada', type=str, help='Nome do arquivo de entrada')
+parser.add_argument('dimensao',type=int, help='Dimensão da matriz (nxn)')
+args = parser.parse_args()
+
+
+class MPSoc:
+	def __init__(self, entrada, linhas, colunas):
+		self.entrada = entrada				#Armazena a entrada
+		self.grafo = defaultdict(list)		#Grafo de entrada
+		self.execMPSoc = defaultdict(list)	#MPSoc em execucao
+		self.linhas = linhas				#Linhas do MPSoc
+		self.colunas = colunas				#Colunas do MPSoc
+
+	"""CONVERTE OS VALORES DE ENTRADA DE STRING PARA INTEIRO"""
+	def converterParaInteiro(self):
+		for i in range(len(self.entrada)): #Percorre cada linha
+			for j in range(len(self.entrada[i])): #Percorre cada elemento da linha
+				var = int(self.entrada[i][j]) #Atribui o valor atual convertido a var
+				self.entrada[i][j] = var #Atribui var a mesma posicao, so que agora eh inteiro
+
+	"""PERCORRE OS VALORES DE ENTRADA E ARMAZENA NO GRAFO"""
+	def inicializaGrafo(self):
+		for i in range(len(self.entrada)): #Percorre as linhas da entrada
+			for j in range(2):
+				if(self.entrada[i][j] not in self.grafo): #Se o no ainda nao estiver no grafo, adiciona ele
+					for k in range(2): #Inicializa a posicao X e Y como -1
+						x = -1
+						self.grafo[self.entrada[i][j]].append(x)
+		for i in range(len(self.entrada)):
+			self.grafo[self.entrada[i][0]].append(self.entrada[i][1:6])
+
+		print("GRAFO TOTAL INICIALIZADO:")
+		print(self.grafo)
+
+
+	def nearest_neighbor():
+
+
+	def mapeamento(self):
+		flag = 0
+		for i in range(self.linhas): #Percorre as linhas do MPSoc
+			for j in range(self.colunas): #Percorre as colunas do MPSoc
+				if (i*self.linhas+j) < len(self.grafo): #Se a iteracao atual for menor que o tamanho do grafo, mapeia no MPSoc
+					self.grafo[i*self.linhas+j][0] = i
+					self.grafo[i*self.linhas+j][1] = j
+				else: #Senao sai do laco j e autoriza a saida do laco i
+					flag = 1
+					break
+			if flag == 1: #Sai do laco i pois ta autorizado
+				break
+
+		for no in self.grafo: #Percorre os nos do MPSoc
+			for lig in range(2, len(self.grafo[no])): #Para cada no, percorre suas conexoes
+				i = self.grafo[no][0]						#valor da posicao i
+				j = self.grafo[no][1]						#valor da posicao j
+				ii = self.grafo[self.grafo[no][lig][0]][0]	#valor da posicao i do outro no
+				jj = self.grafo[self.grafo[no][lig][0]][1]	#valor da posicao j do outro no
+				N = self.linhas								#valor de N
+				canalIda = self.grafo[no][lig][2]			#valor de ocupacao do canal de ida
+				canalVolta = self.grafo[no][lig][4]			#valor de ocupacao do canal de volta
+
+				if(j != jj): #Percorre em x
+					while(j != jj):
+						if(j < jj):
+							if((i*N+j,i*N+j+1) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,i*N+j+1)].append(0) #Cria a conexao ida
+							self.execMPSoc[(i*N+j,i*N+j+1)][0] += canalIda
+							j += 1
+
+						elif(j > jj):
+							if((i*N+j,i*N+j-1) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,i*N+j-1)].append(0) #Cria a conexao ida
+							self.execMPSoc[(i*N+j,i*N+j-1)][0] += canalIda
+							j -= 1
+
+				if(i != ii): #Percorre em y
+					while(i != ii):
+						if(i < ii):
+							if((i*N+j,(i+1)*N+j) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,(i+1)*N+j)].append(0) #Cria a conexao ida
+							self.execMPSoc[(i*N+j,(i+1)*N+j)][0] += canalIda
+							i += 1
+
+						elif(i > ii):
+							if((i*N+j,(i-1)*N+j) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,(i-1)*N+j)].append(0) #Cria a conexao ida
+							self.execMPSoc[(i*N+j,(i-1)*N+j)][0] += canalIda
+							i -= 1
+		for no in self.grafo: #Percorre os nos do MPSoc
+			for lig in range(2, len(self.grafo[no])): #Para cada no, percorre suas conexoes
+				ii = self.grafo[no][0]						#valor da posicao i
+				jj = self.grafo[no][1]						#valor da posicao j
+				i = self.grafo[self.grafo[no][lig][0]][0]	#valor da posicao i do outro no
+				j = self.grafo[self.grafo[no][lig][0]][1]	#valor da posicao j do outro no
+				N = self.linhas								#valor de N
+				canalIda = self.grafo[no][lig][2]			#valor de ocupacao do canal de ida
+				canalVolta = self.grafo[no][lig][4]			#valor de ocupacao do canal de volta
+
+				if(j != jj): #Percorre em x
+					while(j != jj):
+						if(j < jj):
+							if((i*N+j,i*N+j+1) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,i*N+j+1)].append(0) #Cria a conexao ida
+							self.execMPSoc[(i*N+j,i*N+j+1)][0] += canalVolta
+							j += 1
+
+						elif(j > jj):
+							if((i*N+j,i*N+j-1) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,i*N+j-1)].append(0) #Cria a conexao ida
+							self.execMPSoc[(i*N+j,i*N+j-1)][0] += canalVolta
+							j -= 1
+
+				if(i != ii): #Percorre em y
+					while(i != ii):
+						if(i < ii):
+							if((i*N+j,(i+1)*N+j) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,(i+1)*N+j)].append(0) #Cria a conexao ida
+							self.execMPSoc[(i*N+j,(i+1)*N+j)][0] += canalVolta
+							i += 1
+
+						elif(i > ii):
+							if((i*N+j,(i-1)*N+j) not in self.execMPSoc):
+								self.execMPSoc[(i*N+j,(i-1)*N+j)].append(0) #Cria a conexao ida
+							i -= 1
+
+		print("GRAFO TOTAL MAPEADO:")
+		print(self.grafo)
+
+		print("GRAFO POR PARTES")
+		for i in self.grafo:
+			print(i, self.grafo[i])
+
+		for i in self.execMPSoc:
+			print(i,self.execMPSoc[i])
+
+"""FUNCAO PRINCIPAL"""
+def main():
+	arquivo = args.entrada
+
+	"""LE O ARQUIVO DE ENTRADA"""
+	with open(arquivo, 'r') as arq: #Abre e ja fecha o arquivo
+		entrada = arq.readlines() 	#Le todas linhas do arquivo
+		for i in range(len(entrada)):
+			entrada[i] = entrada[i].rstrip("\n").split() #Apaga caracter na direita e quebra strings
+
+	"""IMPRIME A ENTRADA"""
+	print("ENTRADA DE TXT:")
+	for i in range(len(entrada)):
+		print(entrada[i])
+
+	"""CRIA O OBJETO E INICIALIZA A EXECUCAO"""
+	objMPSoc = MPSoc(entrada, args.dimensao, args.dimensao) #Cria o objeto, passando a entrada, as linhas e as colunas
+	objMPSoc.converterParaInteiro() #Converte os elementos da entrada para inteiro
+	objMPSoc.inicializaGrafo()		#Percorre a entrada e inicializa o grafo
+	objMPSoc.mapeamento()			#Mapeia os elementos no MPSoc
+
+
+"""CHAMA A FUNCAO PRINCIPAL"""
+if __name__ == '__main__':
+	main()
